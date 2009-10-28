@@ -1,7 +1,7 @@
 # coding: utf-8
 ###
 # Copyleft (ↄ) 2009, Štěpán Němec
-# All lefts reserved.
+# All rites reversed.
 ###
 
 """
@@ -12,7 +12,7 @@ This plugin provides an interface to the online dictionary at
 import supybot
 import supybot.world as world
 
-__version__ = "1.0"
+__version__ = "1.1"
 
 try:
     __author__ = supybot.authors.stepnem

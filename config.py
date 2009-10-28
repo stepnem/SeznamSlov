@@ -1,7 +1,7 @@
 # coding: utf-8
 ###
 # Copyleft (ↄ) 2009, Štěpán Němec
-# All lefts reserved.
+# All rites reversed.
 ###
 
 import supybot.conf as conf
@@ -20,6 +20,8 @@ SeznamSlov = conf.registerPlugin('SeznamSlov')
 # This is where your configuration variables (if any) should go.  For example:
 # conf.registerGlobalValue(SeznamSlov, 'someConfigVariableName',
 #     registry.Boolean(False, """Help for someConfigVariableName."""))
-
+conf.registerChannelValue(SeznamSlov, 'showUrl',
+    registry.Boolean(False, """Determines whether the bot will include the
+    searched URL in the reply."""))
 
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

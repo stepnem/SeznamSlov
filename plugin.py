@@ -1,12 +1,14 @@
 # coding: utf-8
 ###
 # Copyleft (ↄ) 2009, Štěpán Němec
-# All lefts reserved.
+# All rites reversed.
 ###
 import codecs
 import re
+import urllib
 from BeautifulSoup import BeautifulSoup
 
+import supybot.conf as conf
 import supybot.utils as utils
 from supybot.commands import *
 import supybot.callbacks as callbacks
@@ -36,23 +38,44 @@ class SeznamSlov(callbacks.Plugin):
         if not isinstance(lang, basestring):
             lang = lang.group(0)
         url = 'http://slovnik.seznam.cz/?q=%s&lang=%s' % (
-        utils.web.urlquote(term.decode('utf-8', 'replace').encode('utf-8',
+        urllib.quote_plus(term.decode('utf-8', 'replace').encode('utf-8',
         'replace')), lang)
         soup = BeautifulSoup(utils.web.getUrl(url))
         words = soup.find('table', { 'id': 'words' })
-        if words is None:
-            irc.reply('Nothing found.')
-            return
-        worditems = words.findAll('tr')
         result = ''
-        for item in worditems:
-            orig = codecs.encode(item.find('td', { 'class': 'word' }).find('a',
-                { 'href': _langRe }).string, 'utf-8', 'replace')
-            trls = strlist(item.find('td', { 'class': 'translated' }).findAll(
-            'a', { 'href': _langRe }))
-            result += orig + ': ' + ', '.join(trls).encode('utf-8',
-                    'replace') + ' --- '
-        irc.reply(result[:-5])
+        if words is not None:
+            worditems = words.findAll('tr')
+            for item in worditems:
+                orig = codecs.encode(item.find('td', { 'class': 'word' }).find('a',
+                    { 'href': _langRe }).string, 'utf-8', 'replace')
+                trls = strlist(item.find('td', { 'class': 'translated' }).findAll(
+                'a', { 'href': _langRe }))
+                result += orig + ': ' + ', '.join(trls).encode('utf-8',
+                        'replace') + ' --- '
+        collocations = soup.find('div', { 'id': 'collocations' })
+        if collocations is not None:
+            colllist = collocations.find('dl')
+            collorigs = colllist.findAll('dt')
+            colltrls = colllist.findAll('dd')
+            pairs = zip(collorigs, colltrls)
+            for pair in pairs:
+                orig = codecs.encode(pair[0].find('a',
+                    { 'href': _langRe }).string, 'utf-8', 'replace')
+                trl = codecs.encode(pair[1].find('a',
+                    { 'href': _langRe }).string, 'utf-8', 'replace')
+                result += orig + ': ' + trl + ' --- '
+
+        if self.registryValue('showUrl', msg.args[0]):
+            url = ' (<' + url + '>)'
+        else:
+            url = ''
+
+        if result:
+            result = result[:-5] + url
+            irc.reply(result)
+        else:
+            irc.reply('Nothing found.' + url)
+
 
     seznamslov = wrap(seznamslov, ['something', additional(('matches', _isLang,
     'Invalid language specification.'), 'en_cz')])
